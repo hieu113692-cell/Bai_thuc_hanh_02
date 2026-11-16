@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 typedef struct{
 	char ho_ten[30];
 	int ma_sv;
@@ -91,12 +92,92 @@ void nhap(Data *x){
 		scanf("%f", &(x->d3));
 	}
 }
-Node *search(LList L, int id){
+Node *tkMa(LList L, int id){
 	Node *pp = L.pHead;
 	while(pp != NULL && (pp->infor.ma_sv != id)){
 		pp = pp->link;
 	}
 	return pp;
+}
+Node *tkTen(LList L, char ten[30]){
+    Node *pp = L.pHead;
+    while(pp != NULL && !strstr(pp->infor.ho_ten, ten)){
+        pp = pp->link;
+    }return pp;
+}
+void xoaMa(LList *L, int ma){
+    if(emptyList(*L))return;
+    Node *pp = L->pHead;
+    Node *qq = NULL;
+    while(pp != NULL && pp->infor.ma_sv != ma){
+        qq = pp;
+        pp = pp->link;
+    }
+    if(pp == NULL){
+        printf("Khong tim thay sinh vien can xoa\n");
+        return;
+    }
+    if(qq == NULL){
+        L->pHead = pp->link;
+        if(L->pHead == NULL) L->pTail = NULL;
+    }
+    else{
+        qq->link = pp->link;
+        if(pp == L->pTail) L->pTail = qq;
+    }
+    free(pp);
+    L->spt--;
+    printf("Da xoa thanh cong\n");
+}
+void xoaTen(LList *L, char ten[]){
+    if(emptyList(*L)) return;
+    Node *pp = L->pHead;
+    Node *qq = NULL;
+    int dem = 0;
+    while(pp != NULL){
+        if(strstr(pp->infor.ho_ten, ten) != NULL){
+            dem++;
+            Node *tg = pp;
+            if(qq == NULL){
+                L->pHead = pp->link;
+                pp = L->pHead;
+                if(L->pHead == NULL) L->pTail = NULL;
+            }
+            else{
+                qq->link = pp->link;
+                if(pp == L->pTail) L->pTail = qq;
+                pp = pp->link;
+            }
+            free(tg);
+            L->spt--;
+        }
+        else{
+            qq = pp;
+            pp = pp->link;
+        }
+    }
+    if(dem > 0){
+        printf("Da xoa thanh cong\n");
+    }
+    else{
+        printf("Khong tim thay sinh vien nao de xoa\n");
+    }
+}
+void sxep(Data *a, Data *b){
+    Data tg = *a;
+    *a = *b;
+    *b = tg;
+}
+void sxepTen(LList *L){
+    if(emptyList(*L)) return;
+    for(Node *pp = L->pHead; pp != NULL; pp = pp->link){
+        for(Node *qq = pp->link; qq != NULL; qq = qq->link){
+            if(strcmp(pp->infor.ho_ten, qq->infor.ho_ten)>0){
+                sxep(&(pp->infor), &(qq->infor));
+            }
+        }
+    }
+    printf("Da sap xep theo ten\n");
 }
 void in(Data x){
 	printf("Ten: %s, Ma: %d, Diem 1: %.2f, Diem 2: %.2f, Diem 3: %.2f", x.ho_ten, x.ma_sv, x.d1, x.d2, x.d3);
@@ -112,6 +193,7 @@ void processList(LList L){
 int main(){
 	LList L;
 	int kt=0, ma;
+	char ten[30];
 	Data x;
 	initList(&L);
 	do{
@@ -119,6 +201,11 @@ int main(){
 		printf("\n1: Them nut vao dau danh sach");
 		printf("\n2: Them nut vao cuoi danh sach");
 		printf("\n3: Them nut vao sau mot nut khac trong danh sach");
+		printf("\n4: Xoa theo ma");
+		printf("\n5: Xoa theo ten");
+		printf("\n6: Tim kiem theo ma");
+		printf("\n7: Tim kiem theo ten");
+		printf("\n8: Sap xep danh sach theo ten");
 		printf("\n9: Duyet ds");
 		printf("\n0: Thoat");
 		printf("\nMoi ban chon: ");
@@ -152,16 +239,40 @@ int main(){
 				}
 				break;
 			case 4:
+			    printf("Nhap ma sinh vien can xoa: ");
+			    scanf("%d", &ma);
+			    xoaMa(&L, ma);
+			    break;
+			case 5:
+			    printf("Nhap ten sinh vien can xoa: ");
+			    scanf(" %[^\n]", ten);
+			    xoaTen(&L, ten);
+			    break;
+			case 6:
 				printf("\nNhap ma sinh vien can tim: ");
 				scanf("%d", &ma);
-				if(search(L, ma) != NULL){
+				if(tkMa(L, ma) != NULL){
 					printf("Tim thay sinh vien: ");
-					in(search(L, ma)->infor);
+					in(tkMa(L, ma)->infor);
 				}
 				else{
-					printf("Khong tim thay sinh vien");
+					printf("Khong tim thay sinh vien\n");
 				}
 				break;
+			case 7:
+			    printf("Nhap sinh vien ca tim: ");
+			    scanf(" %[^\n]", ten);
+			    if(tkTen(L, ten) != NULL){
+			        printf("Tim thay sinh vien: ");
+			        in(tkTen(L, ten)->infor);
+			    }
+			    else{
+			        printf("Khong tim thay sinh vien\n");
+			    }
+			    break;
+			case 8:
+			    sxepTen(&L);
+			    break;
 			case 9:
 				processList(L);
 				break;
@@ -174,3 +285,5 @@ int main(){
 	}while(kt == 0);
 	return 0;
 }
+
+
